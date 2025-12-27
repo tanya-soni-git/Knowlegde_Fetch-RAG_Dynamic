@@ -29,19 +29,26 @@ def main():
                 
                 # 1. Process all files
                 for f in uploaded_files:
-                    all_chunks.extend(processor.process_uploaded_file(f))
+                    # Safely extend list only if chunks are returned
+                    chunks = processor.process_uploaded_file(f)
+                    if chunks:
+                        all_chunks.extend(chunks)
                 
-                # 2. Create the vector store index
-                vs = VectorStore()
-                vs.create_vectorstore(all_chunks)
-                
-                # 3. Build the workflow graph
-                gb = GraphBuilder(vs.get_retriever(), Config.get_llm())
-                gb.build()
-                
-                # 4. Save to session state
-                st.session_state.rag = gb
-                st.success(f"Success! {len(all_chunks)} chunks indexed.")
+                # 2. Safety check: Only proceed if chunks exist to avoid IndexError
+                if not all_chunks:
+                    st.error("No text could be extracted from the uploaded files. Please check if they are empty or scanned images.")
+                else:
+                    # 3. Create the vector store index
+                    vs = VectorStore()
+                    vs.create_vectorstore(all_chunks)
+                    
+                    # 4. Build the workflow graph
+                    gb = GraphBuilder(vs.get_retriever(), Config.get_llm())
+                    gb.build()
+                    
+                    # 5. Save to session state
+                    st.session_state.rag = gb
+                    st.success(f"Success! {len(all_chunks)} chunks indexed.")
 
     # Main Chat Interface
     if st.session_state.rag:
@@ -53,7 +60,7 @@ def main():
                 st.write(response["answer"])
                 
                 with st.expander("🔍 View Retrieved Sources"):
-                    for i, doc in enumerate(response["retrieved_docs"]):
+                    for i, doc in enumerate(response.get("retrieved_docs", [])):
                         st.markdown(f"**Source {i+1}:**")
                         st.info(doc.page_content)
     else:

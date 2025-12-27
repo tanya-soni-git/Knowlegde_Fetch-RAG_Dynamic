@@ -1,5 +1,6 @@
 import os
 import tempfile
+import streamlit as st
 from pathlib import Path
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -23,14 +24,25 @@ class DocumentProcessor:
             else:
                 loader = TextLoader(tmp_path)
             
+            # 1. Loading logic
             docs = loader.load()
             
-            # Split the loaded text into manageable chunks
+            # Handle empty extractions (e.g., scanned PDFs without text)
+            if not docs:
+                return [] 
+            
+            # 2. Splitting logic
             text_splitter = RecursiveCharacterTextSplitter(
                 chunk_size=self.chunk_size, 
                 chunk_overlap=self.chunk_overlap
             )
             return text_splitter.split_documents(docs)
+            
+        except Exception as e:
+            # Error handling for the UI
+            st.error(f"Error processing {uploaded_file.name}: {str(e)}")
+            return []
+            
         finally:
             # Clean up the temp file after processing
             if os.path.exists(tmp_path):
