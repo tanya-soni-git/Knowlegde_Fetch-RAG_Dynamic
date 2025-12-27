@@ -1,0 +1,19 @@
+Metadata-Version: 2.4
+Name: rag-dynamic
+Version: 0.1.0
+Summary: Dynamic Agentic RAG with File Uploads
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: beautifulsoup4>=4.14.3
+Requires-Dist: faiss-cpu>=1.13.2
+Requires-Dist: langchain>=1.2.0
+Requires-Dist: langchain-community>=0.4.1
+Requires-Dist: langchain-huggingface>=1.2.0
+Requires-Dist: langchain-openai>=1.1.6
+Requires-Dist: langgraph>=1.0.5
+Requires-Dist: pypdf>=5.1.0
+Requires-Dist: openai>=2.14.0
+Requires-Dist: pydantic>=2.12.5
+Requires-Dist: python-dotenv>=1.2.1
+Requires-Dist: streamlit>=1.52.2
+Requires-Dist: wikipedia>=1.4.0
