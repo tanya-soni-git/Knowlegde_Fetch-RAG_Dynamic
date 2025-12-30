@@ -61,12 +61,23 @@ class DocumentProcessor:
             return []
 
     def process_youtube(self, url):
-        """Handles YouTube Video Transcripts."""
+    """Handles YouTube Video Transcripts with error handling for Cloud blocking."""
         try:
+            # Use LangChain's specialized loader
+            from langchain_community.document_loaders import YoutubeLoader
+            
+            # This helper extracts the ID from both short (youtu.be) and long (youtube.com) links
             loader = YoutubeLoader.from_youtube_url(url, add_video_info=True)
-            return self.split_documents(loader.load())
+            docs = loader.load()
+            
+            if not docs:
+                st.warning("No transcript found. Ensure the video has subtitles enabled.")
+                return []
+                
+            return self.split_documents(docs)
         except Exception as e:
-            st.error(f"Error loading YouTube transcript: {str(e)}")
+            st.error(f"YouTube Error: This is likely due to YouTube blocking Cloud IPs. "
+                     f"Try a different video or use a proxy. Details: {str(e)}")
             return []
 
     def process_wikipedia(self, query):
