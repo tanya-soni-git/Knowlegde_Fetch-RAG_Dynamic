@@ -61,9 +61,9 @@ class DocumentProcessor:
             return []
 
     def process_youtube(self, url):
-        """Handles YouTube Video Transcripts with error handling for Cloud blocking."""
+        """Handles YouTube Video Transcripts with error handling."""
         try:
-            # This helper extracts the ID from both short (youtu.be) and long (youtube.com) links
+            # Loader for YouTube transcripts
             loader = YoutubeLoader.from_youtube_url(url, add_video_info=True)
             docs = loader.load()
             
@@ -73,8 +73,7 @@ class DocumentProcessor:
                 
             return self.split_documents(docs)
         except Exception as e:
-            st.error(f"YouTube Error: This is likely due to YouTube blocking Cloud IPs. "
-                     f"Try a different video or use a proxy. Details: {str(e)}")
+            st.error(f"YouTube Error: {str(e)}")
             return []
 
     def process_wikipedia(self, query):
