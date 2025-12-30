@@ -57,7 +57,7 @@ class DocumentProcessor:
             return self.split_documents(docs)
 
         except Exception as e:
-            st.error(f"❌ Error processing file: {str(e)}")
+            st.error(f"Error processing file: {str(e)}")
             return []
 
         finally:
@@ -72,17 +72,18 @@ class DocumentProcessor:
             return self.split_documents(docs)
 
         except Exception as e:
-            st.error(f"❌ Error loading URL: {str(e)}")
+            st.error(f"Error loading URL: {str(e)}")
             return []
 
     # -------------------- YOUTUBE (CLOUD SAFE) --------------------
     def process_youtube(self, url):
         """
         Uses youtube-transcript-api instead of YoutubeLoader.
-        This is the ONLY semi-reliable way on Streamlit Cloud.
+        This approach is more reliable on cloud platforms,
+        but access may still be restricted by YouTube.
         """
         try:
-            # Handle youtu.be and watch?v=
+            # Handle youtu.be and watch?v= formats
             if "youtu.be" in url:
                 video_id = url.split("/")[-1].split("?")[0]
             else:
@@ -108,33 +109,43 @@ class DocumentProcessor:
             return self.split_documents(docs)
 
         except TranscriptsDisabled:
-            st.error("❌ This video has no manually enabled captions.")
+            st.error("This video does not have captions enabled.")
             return []
 
         except NoTranscriptFound:
-            st.error("❌ No English transcript found for this video.")
+            st.error("No English transcript was found for this video.")
             return []
 
         except Exception:
             st.error(
-                "❌ YouTube blocked transcript access from cloud servers.\n\n"
-                "✅ Try:\n"
-                "- A different video\n"
-                "- A video with **manual captions**\n"
-                "- Upload transcript text instead"
+                "Unable to retrieve the YouTube transcript from this environment.\n\n"
+                "Suggested actions:\n"
+                "- Try a different video\n"
+                "- Use a video with manually created captions\n"
+                "- Paste or upload the transcript text manually"
             )
             return []
 
     # -------------------- WIKIPEDIA --------------------
     def process_wikipedia(self, query):
+        """
+        Accepts:
+        - A topic name (e.g. 'Java Virtual Machine')
+        - A full Wikipedia article URL
+        """
         try:
+            # Handle full Wikipedia URLs
+            if "wikipedia.org/wiki/" in query:
+                query = query.split("/wiki/")[-1].replace("_", " ")
+
             loader = WikipediaLoader(
                 query=query,
                 load_max_docs=1
             )
+
             docs = loader.load()
             return self.split_documents(docs)
 
         except Exception as e:
-            st.error(f"❌ Error loading Wikipedia: {str(e)}")
+            st.error(f"Error loading Wikipedia content: {str(e)}")
             return []
