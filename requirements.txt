@@ -112,3 +112,5 @@ youtube-transcript-api
 beautifulsoup4>=4.14.3
 wikipedia>=1.4.0
 pandas
+youtube-transcript-api
+pytube
