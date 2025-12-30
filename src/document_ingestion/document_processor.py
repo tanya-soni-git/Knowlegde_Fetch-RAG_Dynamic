@@ -63,7 +63,8 @@ class DocumentProcessor:
     def process_youtube(self, url):
         """Handles YouTube Video Transcripts with enhanced error handling for Cloud blocking."""
         try:
-            # Explicitly set language parameters to help bypass generic 400 errors
+            # We explicitly set language parameters to help bypass generic 400 errors
+            # These parameters improve the chance of fetching transcripts on Cloud IPs
             loader = YoutubeLoader.from_youtube_url(
                 url, 
                 add_video_info=True,
@@ -79,7 +80,7 @@ class DocumentProcessor:
             return self.split_documents(docs)
         except Exception as e:
             error_msg = str(e)
-            # Better feedback for common Cloud IP blocking
+            # This handles the specific HTTP 400 error seen in your screenshot
             if "400" in error_msg or "blocked" in error_msg.lower():
                 st.error("YouTube Error: HTTP Error 400. This is likely due to YouTube blocking requests from Cloud servers. "
                          "Try a different video or check if manual captions are available.")
