@@ -38,7 +38,7 @@ A professional, agentic Retrieval-Augmented Generation (RAG) application built w
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/tanya-soni-git/knowlegde_fetch-rag_dynamic.git](https://github.com/tanya-soni-git/knowlegde_fetch-rag_dynamic.git)
+   git clone https://github.com/tanya-soni-git/knowlegde_fetch-rag_dynamic.git
    cd knowlegde_fetch-rag_dynamic
 
 2. **Install dependencies:**
@@ -87,3 +87,4 @@ https://knowlegdefetch-ragdynamic-ai.streamlit.app
 * **Information Density:** Used a **Table** for the Tech Stack to make it scannable.
 * **Project Tree:** Added a visual directory structure so users understand where the code lives.
 * **Consistent Styling:** Standardized bolding and icon usage to match the "Business Pitch Deck" theme of your UI.
+
