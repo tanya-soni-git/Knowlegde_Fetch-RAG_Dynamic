@@ -13,15 +13,14 @@ from langchain_community.document_loaders import (
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 
-from youtube_transcript_api import (
-    YouTubeTranscriptApi,
-    TranscriptsDisabled,
-    NoTranscriptFound
-)
-
 
 class DocumentProcessor:
-    def __init__(self, chunk_size=500, chunk_overlap=100):
+    """
+    Handles ingestion and chunking of multiple data sources
+    for building a RAG knowledge base.
+    """
+
+    def __init__(self, chunk_size=300, chunk_overlap=50):
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
 
@@ -75,66 +74,34 @@ class DocumentProcessor:
             st.error(f"Error loading URL: {str(e)}")
             return []
 
-    # -------------------- YOUTUBE (CLOUD SAFE) --------------------
-    def process_youtube(self, url):
+    # -------------------- PASTE TEXT --------------------
+    def process_raw_text(self, text, source="manual_text"):
         """
-        Uses youtube-transcript-api instead of YoutubeLoader.
-        This approach is more reliable on cloud platforms,
-        but access may still be restricted by YouTube.
+        Handles copy-pasted text (articles, notes, transcripts, etc.)
         """
-        try:
-            # Handle youtu.be and watch?v= formats
-            if "youtu.be" in url:
-                video_id = url.split("/")[-1].split("?")[0]
-            else:
-                video_id = url.split("v=")[-1].split("&")[0]
+        if not text or not text.strip():
+            return []
 
-            transcript = YouTubeTranscriptApi.get_transcript(
-                video_id,
-                languages=["en"]
+        docs = [
+            Document(
+                page_content=text.strip(),
+                metadata={
+                    "source": source,
+                    "type": "manual"
+                }
             )
+        ]
 
-            text = " ".join(chunk["text"] for chunk in transcript)
-
-            docs = [
-                Document(
-                    page_content=text,
-                    metadata={
-                        "source": url,
-                        "type": "youtube"
-                    }
-                )
-            ]
-
-            return self.split_documents(docs)
-
-        except TranscriptsDisabled:
-            st.error("This video does not have captions enabled.")
-            return []
-
-        except NoTranscriptFound:
-            st.error("No English transcript was found for this video.")
-            return []
-
-        except Exception:
-            st.error(
-                "Unable to retrieve the YouTube transcript from this environment.\n\n"
-                "Suggested actions:\n"
-                "- Try a different video\n"
-                "- Use a video with manually created captions\n"
-                "- Paste or upload the transcript text manually"
-            )
-            return []
+        return self.split_documents(docs)
 
     # -------------------- WIKIPEDIA --------------------
     def process_wikipedia(self, query):
         """
         Accepts:
-        - A topic name (e.g. 'Java Virtual Machine')
-        - A full Wikipedia article URL
+        - Topic name (e.g. 'Java Virtual Machine')
+        - Full Wikipedia URL
         """
         try:
-            # Handle full Wikipedia URLs
             if "wikipedia.org/wiki/" in query:
                 query = query.split("/wiki/")[-1].replace("_", " ")
 
