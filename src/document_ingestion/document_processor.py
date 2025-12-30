@@ -61,11 +61,8 @@ class DocumentProcessor:
             return []
 
     def process_youtube(self, url):
-    """Handles YouTube Video Transcripts with error handling for Cloud blocking."""
+        """Handles YouTube Video Transcripts with error handling for Cloud blocking."""
         try:
-            # Use LangChain's specialized loader
-            from langchain_community.document_loaders import YoutubeLoader
-            
             # This helper extracts the ID from both short (youtu.be) and long (youtube.com) links
             loader = YoutubeLoader.from_youtube_url(url, add_video_info=True)
             docs = loader.load()
