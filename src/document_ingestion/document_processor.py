@@ -24,7 +24,7 @@ class DocumentProcessor:
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
 
-    # -------------------- COMMON SPLITTER --------------------
+    # SPLITTER
     def split_documents(self, docs):
         if not docs:
             return []
@@ -35,7 +35,7 @@ class DocumentProcessor:
         )
         return splitter.split_documents(docs)
 
-    # -------------------- FILE UPLOAD --------------------
+    #FILE UPLOAD 
     def process_uploaded_file(self, uploaded_file):
         with tempfile.NamedTemporaryFile(
             delete=False,
@@ -63,7 +63,7 @@ class DocumentProcessor:
             if os.path.exists(tmp_path):
                 os.remove(tmp_path)
 
-    # -------------------- WEB URL --------------------
+    #WEB URL 
     def process_url(self, url):
         try:
             loader = WebBaseLoader(url)
@@ -74,7 +74,6 @@ class DocumentProcessor:
             st.error(f"Error loading URL: {str(e)}")
             return []
 
-    # -------------------- PASTE TEXT --------------------
     def process_raw_text(self, text, source="manual_text"):
         """
         Handles copy-pasted text (articles, notes, transcripts, etc.)
@@ -94,7 +93,7 @@ class DocumentProcessor:
 
         return self.split_documents(docs)
 
-    # -------------------- WIKIPEDIA --------------------
+    # WIKIPEDIA 
     def process_wikipedia(self, query):
         """
         Accepts:
