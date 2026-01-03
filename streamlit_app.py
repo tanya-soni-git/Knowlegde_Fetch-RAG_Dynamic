@@ -1,13 +1,12 @@
 import streamlit as st
 from langchain_core.documents import Document
 
-# Corrected Imports
 from src.config.config import Config
 from src.document_ingestion.document_processor import DocumentProcessor
 from src.vectorstore.vectorstore import VectorStore
 from src.graph_builder.graph_builder import GraphBuilder
 
-# --- PAGE CONFIGURATION ---
+#PAGE CONFIGURATION
 st.set_page_config(
     page_title="Dynamic RAG Pro",
     page_icon="📂",
@@ -65,9 +64,7 @@ def main():
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # ---------------------------------------------------------
     # PAGE 1: UPLOAD & SETUP
-    # ---------------------------------------------------------
     if st.session_state.step == "upload":
         st.title("📂 Knowledge Base Setup")
         st.write("Select your source to begin indexing your intelligence.")
@@ -125,9 +122,7 @@ def main():
                 st.session_state.step = "chat" # Automatically move to Dashboard
                 st.rerun()
 
-    # ---------------------------------------------------------
     # PAGE 2: KNOWLEDGE DASHBOARD
-    # ---------------------------------------------------------
     elif st.session_state.step == "chat":
         with st.sidebar:
             st.title("⚙️ Control Center")
