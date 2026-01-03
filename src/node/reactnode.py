@@ -15,9 +15,7 @@ class RAGNodes:
         self.retriever = retriever
         self.llm = llm
 
-    # -------------------------
     # 1️⃣ Retrieve documents
-    # -------------------------
     def retrieve_docs(self, state: RAGState):
         """
         Fetch relevant documents for the user question.
@@ -29,9 +27,7 @@ class RAGNodes:
             "retrieved_docs": docs
         }
 
-    # -------------------------
     # 2️⃣ Generate answer
-    # -------------------------
     def generate_answer(self, state: RAGState):
         """
         Generate answer strictly from retrieved documents.
