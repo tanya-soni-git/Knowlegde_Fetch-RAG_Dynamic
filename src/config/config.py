@@ -5,7 +5,7 @@ import streamlit as st
 import subprocess
 import sys
 
-# --- FIX FOR STREAMLIT IMPORT ERRORS ---
+#FIX FOR STREAMLIT IMPORT ERRORS
 def ensure_dependencies():
     """Forces the environment to recognize sentence-transformers if the loader fails."""
     try:
@@ -13,10 +13,7 @@ def ensure_dependencies():
     except ImportError:
         subprocess.check_call([sys.executable, "-m", "pip", "install", "sentence-transformers"])
 
-# Run the check immediately on import
 ensure_dependencies()
-# ---------------------------------------
-
 load_dotenv()
 
 class Config:
