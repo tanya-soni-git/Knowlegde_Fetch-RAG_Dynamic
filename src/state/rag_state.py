@@ -5,3 +5,4 @@ class RAGState(TypedDict):
     question: str
     retrieved_docs: List[Document]
     answer: str
+    suggested_questions: List[str]  # New field added for auto-suggestions
