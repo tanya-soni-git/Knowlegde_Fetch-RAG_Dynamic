@@ -6,7 +6,7 @@ from src.document_ingestion.document_processor import DocumentProcessor
 from src.vectorstore.vectorstore import VectorStore
 from src.graph_builder.graph_builder import GraphBuilder
 
-#PAGE CONFIGURATION
+# PAGE CONFIGURATION
 st.set_page_config(
     page_title="Dynamic RAG Pro",
     page_icon="📂",
@@ -17,25 +17,18 @@ def apply_custom_design():
     """Injects CSS for the dark, futuristic 'Pitch Deck' look."""
     st.markdown("""
         <style>
-        /* Gradient Background matching your reference image */
         .stApp {
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             color: #ffffff;
         }
-        
-        /* Sidebar Styling */
         section[data-testid="stSidebar"] {
             background-color: rgba(22, 27, 34, 0.95) !important;
             border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        /* Metrics Styling */
         [data-testid="stMetricValue"] {
-            color: #a855f7; /* Purple accent from your image */
+            color: #a855f7;
             font-weight: bold;
         }
-
-        /* Glowing Buttons */
         .stButton>button {
             border-radius: 25px;
             background-color: #6366f1;
@@ -43,6 +36,7 @@ def apply_custom_design():
             font-weight: bold;
             border: none;
             transition: 0.3s;
+            width: 100%;
         }
         .stButton>button:hover {
             box-shadow: 0 0 20px rgba(99, 102, 241, 0.8);
@@ -54,7 +48,7 @@ def apply_custom_design():
 def main():
     apply_custom_design()
 
-    # Initialize Session State for Page Navigation
+    # Initialize Session State
     if "step" not in st.session_state:
         st.session_state.step = "upload" 
     if "rag" not in st.session_state:
@@ -63,6 +57,10 @@ def main():
         st.session_state.chunk_count = 0
     if "messages" not in st.session_state:
         st.session_state.messages = []
+    if "suggestions" not in st.session_state:
+        st.session_state.suggestions = []
+    if "active_prompt" not in st.session_state:
+        st.session_state.active_prompt = None
 
     # PAGE 1: UPLOAD & SETUP
     if st.session_state.step == "upload":
@@ -79,7 +77,6 @@ def main():
         all_chunks = []
         build_trigger = False
 
-        # Container for Input Area
         with st.container():
             if source_type == "Documents (PDF/TXT/CSV)":
                 files = st.file_uploader("Upload files", type=["pdf", "txt", "csv"], accept_multiple_files=True)
@@ -117,9 +114,14 @@ def main():
                 gb = GraphBuilder(vs.get_retriever(), Config.get_llm())
                 gb.build()
 
+                # Generate initial suggested questions from the content
+                with st.spinner("Generating initial suggestions..."):
+                    initial_state = gb.graph.invoke({"question": "What are the main topics?", "retrieved_docs": []})
+                    st.session_state.suggestions = initial_state.get("suggested_questions", [])
+
                 st.session_state.rag = gb
                 st.session_state.chunk_count = len(all_chunks)
-                st.session_state.step = "chat" # Automatically move to Dashboard
+                st.session_state.step = "chat"
                 st.rerun()
 
     # PAGE 2: KNOWLEDGE DASHBOARD
@@ -135,13 +137,30 @@ def main():
 
         st.title("🤖 Knowledge Dashboard")
 
+        # --- SUGGESTION CHIPS ---
+        if st.session_state.suggestions:
+            st.write("✨ Suggested for you:")
+            cols = st.columns(len(st.session_state.suggestions))
+            for i, question in enumerate(st.session_state.suggestions):
+                if cols[i].button(question, key=f"suggest_{i}"):
+                    st.session_state.active_prompt = question
+
         # History Display
         for msg in st.session_state.messages:
             with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
 
         # Chat Input
-        if prompt := st.chat_input("Ask a question based on your data..."):
+        user_input = st.chat_input("Ask a question based on your data...")
+        
+        # Determine active prompt: manual input OR clicked suggestion button
+        prompt = user_input or st.session_state.get("active_prompt")
+
+        if prompt:
+            # Reset active_prompt so it doesn't trigger on every rerun
+            if "active_prompt" in st.session_state:
+                st.session_state.active_prompt = None
+
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
                 st.markdown(prompt)
@@ -150,6 +169,10 @@ def main():
                 with st.spinner("Analyzing..."):
                     response = st.session_state.rag.run(prompt)
                     answer = response["answer"]
+                    
+                    # UPDATE suggestions for the next turn
+                    st.session_state.suggestions = response.get("suggested_questions", [])
+                    
                     st.markdown(answer)
                     
                     with st.expander("View Reference Sources"):
@@ -157,6 +180,7 @@ def main():
                             st.caption(f"Source {i+1}: {doc.page_content[:300]}...")
             
             st.session_state.messages.append({"role": "assistant", "content": answer})
+            st.rerun() 
 
 if __name__ == "__main__":
     main()
