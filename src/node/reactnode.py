@@ -69,3 +69,37 @@ class RAGNodes:
         return {
             "answer": response.content
         }
+
+    # -------------------------
+    # 3️⃣ Generate Auto-Suggestions
+    # -------------------------
+    def generate_suggestions(self, state: RAGState):
+        """
+        Generates 5 relevant questions based on context or the last answer.
+        """
+        docs = state.get("retrieved_docs", [])
+        if not docs:
+            return {"suggested_questions": []}
+
+        # Combine retrieved document content for suggestion context
+        context = "\n\n".join([doc.page_content for doc in docs])
+        
+        prompt = f"""Based on the following context, generate 5 concise, 
+        engaging questions that a user might want to ask. 
+        Return ONLY a bulleted list of questions.
+        
+        Context: {context}"""
+        
+        response = self.llm.invoke(prompt)
+        
+        # Parse the bulleted list into a Python list
+        # Handles stripping common bullet formats like "-", "1.", etc.
+        questions = [
+            q.strip("- ").strip("12345. ").strip() 
+            for q in response.content.strip().split("\n") 
+            if q.strip()
+        ][:5]
+        
+        return {
+            "suggested_questions": questions
+        }
