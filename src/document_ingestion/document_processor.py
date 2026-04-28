@@ -35,7 +35,7 @@ class DocumentProcessor:
         )
         return splitter.split_documents(docs)
 
-    #FILE UPLOAD 
+    # FILE UPLOAD 
     def process_uploaded_file(self, uploaded_file):
         with tempfile.NamedTemporaryFile(
             delete=False,
@@ -63,7 +63,7 @@ class DocumentProcessor:
             if os.path.exists(tmp_path):
                 os.remove(tmp_path)
 
-    #WEB URL 
+    # WEB URL 
     def process_url(self, url):
         try:
             loader = WebBaseLoader(url)
