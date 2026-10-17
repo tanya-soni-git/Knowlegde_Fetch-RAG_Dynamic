@@ -1,11 +1,11 @@
 import os
-from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-import streamlit as st
 import subprocess
 import sys
+from dotenv import load_dotenv
+from langchain_groq import ChatGroq
+import streamlit as st
 
-#FIX FOR STREAMLIT IMPORT ERRORS
+# FIX FOR STREAMLIT IMPORT ERRORS
 def ensure_dependencies():
     """Forces the environment to recognize sentence-transformers if the loader fails."""
     try:
@@ -16,24 +16,29 @@ def ensure_dependencies():
 ensure_dependencies()
 load_dotenv()
 
-class Config:
+def _get_api_key():
+    key = os.getenv("GROQ_API_KEY") or os.getenv("XAI_API_KEY")
+    if key:
+        return key
     try:
-        XAI_API_KEY = st.secrets["XAI_API_KEY"]
-    except (KeyError, FileNotFoundError, getattr(st.errors, 'StreamlitSecretNotFoundError', Exception)):
-        XAI_API_KEY = os.getenv("XAI_API_KEY")
-    
-    MODEL_NAME = "llama-3.1-8b-instant"
-    
-    # IMPROVEMENT: Reduced chunk size and increased overlap 
-    # This helps the model "see" more specific details like tech stacks.
+        return st.secrets.get("GROQ_API_KEY") or st.secrets.get("XAI_API_KEY")
+    except Exception:
+        return None
+
+class Config:
+    GROQ_API_KEY = _get_api_key()
+
+    MODEL_NAME = "openai/gpt-oss-20b"
     CHUNK_SIZE = 500 
     CHUNK_OVERLAP = 100
 
     @staticmethod
     def get_llm():
-        return ChatOpenAI(
-            openai_api_base="https://api.groq.com/openai/v1",
-            openai_api_key=Config.XAI_API_KEY,
+        if not Config.GROQ_API_KEY:
+            raise ValueError("Groq API key not found. Please set GROQ_API_KEY in your .env file or Streamlit Secrets.")
+
+        return ChatGroq(
+            groq_api_key=Config.GROQ_API_KEY,
             model_name=Config.MODEL_NAME,
             temperature=0
         )
