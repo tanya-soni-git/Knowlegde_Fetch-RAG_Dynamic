@@ -2,6 +2,7 @@ import os
 import tempfile
 import streamlit as st
 from pathlib import Path
+import wikipedia
 
 from langchain_community.document_loaders import (
     PyPDFLoader,
@@ -104,12 +105,11 @@ class DocumentProcessor:
             if "wikipedia.org/wiki/" in query:
                 query = query.split("/wiki/")[-1].replace("_", " ")
 
-            os.environ["WIKIPEDIA_USER_AGENT"] = "LuminaDynamicRAG/1.0 (contact: user@example.com)"
+            wikipedia.set_user_agent("LuminaDynamicRAG/1.0 (contact: user@example.com)")
 
             loader = WikipediaLoader(
                 query=query,
-                load_max_docs=1,
-                user_agent="LuminaDynamicRAG/1.0 (contact: user@example.com)"
+                load_max_docs=1
             )
 
             docs = loader.load()
